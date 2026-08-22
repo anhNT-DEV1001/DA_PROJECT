@@ -1,0 +1,14 @@
+$kind: http-request
+name: createRole
+url: http://localhost:9000/api/v1/roles
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"root\",\r
+
+    \    \"description\": \"Quản trị hệ thống\"\r
+
+    }"
+order: 3328789974073645

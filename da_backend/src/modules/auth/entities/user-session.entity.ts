@@ -1,0 +1,20 @@
+import { BaseEntity } from 'src/database/entites';
+import { User } from '../../users/entities/users.entity';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+
+@Entity('user_sessions')
+export class UserSession extends BaseEntity {
+  @Column({ name: 'user_id', type: 'int' })
+  userId: number;
+
+  @ManyToOne(() => User, (user) => user.sessions, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
+
+  @Column({ type: 'varchar', length: 255, name: 'hashed_token' })
+  hashedToken: string;
+  @Column({ type: 'date', name: 'expires_at' })
+  expiresAt: Date;
+  @Column({ type: 'uuid' })
+  sid: string;
+}

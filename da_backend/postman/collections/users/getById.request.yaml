@@ -1,0 +1,4 @@
+$kind: http-request
+name: getById
+url: "http://localhost:9000/api/v1/users/:"
+method: GET

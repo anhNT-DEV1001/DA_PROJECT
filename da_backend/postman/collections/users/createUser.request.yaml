@@ -1,0 +1,26 @@
+$kind: http-request
+name: createUser
+url: http://localhost:9000/api/v1/users
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"username\": \"da_root\",\r
+
+    \  \"password\": \"123456\",\r
+
+    \  \"passwordConfirm\": \"123456\",\r
+
+    \  \"fullName\": \"Nguyễn Văn A\",\r
+
+    \  \"email\": \"a@example.com\",\r
+
+    \  \"phone\": \"0901234567\",\r
+
+    \  \"gender\": \"male\",\r
+
+    \  \"roleIds\": [1, 2, 3]\r
+
+    }"
+order: 1628653195624447

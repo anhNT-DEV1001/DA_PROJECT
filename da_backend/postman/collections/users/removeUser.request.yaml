@@ -1,0 +1,9 @@
+$kind: http-request
+name: removeUser
+url: http://localhost:9000/api/v1/users/:id
+method: DELETE
+pathVariables:
+  - key: id
+    value: "2"
+    description: ""
+order: 2351498728046591

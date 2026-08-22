@@ -1,0 +1,7 @@
+$kind: http-request
+name: getById
+url: http://localhost:9000/api/v1/roles/:id
+method: GET
+pathVariables:
+  id: ""
+order: 1364296563686643
