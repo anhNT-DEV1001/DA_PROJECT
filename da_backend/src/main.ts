@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const config = new ConfigService();
+  const config = app.get(ConfigService);
 
   const host = config.get<string>('HOST') ?? 'localhost';
   const port = config.get<number>('PORT') ?? 9000;
@@ -14,12 +14,15 @@ async function bootstrap() {
 
   app.setGlobalPrefix(prefix);
   app.use(cookieParser());
-  app.enableCors({
-    origin: '*',
-    credentials: true,
-  });
+  const allowedOrigins = config
+    .get<string>('FRONTEND_URL', 'http://localhost:3000')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  app.enableCors({ origin: allowedOrigins, credentials: true });
 
   await app.listen(port, host);
   console.log(`Server is running on http://${host}:${port}/${prefix}`);
 }
-bootstrap();
+void bootstrap();

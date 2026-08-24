@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dtos';
+import { Public } from 'src/common/decorators';
 
 @Controller('users')
 export class UsersController {
@@ -19,6 +20,8 @@ export class UsersController {
     const response = await this.userService.getById(id);
     return response;
   }
+
+  @Public()
   @Post()
   async createUserController(@Body() dto: CreateUserDto) {
     const response = await this.userService.createUser(dto);

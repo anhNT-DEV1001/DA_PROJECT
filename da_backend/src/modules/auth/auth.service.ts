@@ -1,4 +1,3 @@
-import { Jwt } from './../../../node_modules/.pnpm/@types+jsonwebtoken@9.0.10/node_modules/@types/jsonwebtoken/index.d';
 import {
   BadRequestException,
   Injectable,
@@ -48,6 +47,7 @@ export class AuthService {
     const session = this.userSessionRepo.create({
       userId: user.id,
       hashedToken: tokenHashed,
+      sid: sessionId,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       createdBy: user.id,
     });

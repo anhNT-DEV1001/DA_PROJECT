@@ -53,7 +53,7 @@ export class UsersService {
         await userRoleRepo.save(userRoles);
       }
 
-      return new UserResponse().mapToResponse(user, validRoleIds);
+      return new UserResponse().mapToResponse(user);
     });
   }
 
@@ -98,13 +98,7 @@ export class UsersService {
           await userRoleRepo.save(userRoles);
         }
       }
-
-      const responseRoleIds =
-        validRoleIds ??
-        (await userRoleRepo.findBy({ userId: user.id })).map(
-          (userRole) => userRole.roleId,
-        );
-      return new UserResponse().mapToResponse(user, responseRoleIds);
+      return new UserResponse().mapToResponse(user);
     });
   }
 
@@ -117,14 +111,34 @@ export class UsersService {
   }
 
   async getById(id: number): Promise<UserResponse> {
-    const user = await this.userRepo.findOne({ where: { id } });
+    const user = await this.getByIdWithRoles(id);
     if (!user) throw new BadRequestException('Người dùng không tồn tại !');
 
+    return user;
+  }
+
+  async getByIdWithRoles(id: number): Promise<UserResponse | null> {
+    const user = await this.userRepo.findOne({
+      where: { id },
+      relations: {
+        userRoles: {
+          role: true,
+        },
+      },
+    });
+    if (!user) return null;
     return new UserResponse().mapToResponse(user);
   }
 
   async getByUsername(username: string): Promise<User | null> {
-    const user = await this.userRepo.findOne({ where: { username } });
+    const user = await this.userRepo.findOne({
+      where: { username },
+      relations: {
+        userRoles: {
+          role: true,
+        },
+      },
+    });
     return user;
   }
 
@@ -149,13 +163,4 @@ export class UsersService {
 
     return uniqueRoleIds;
   }
-
-  // async getUserRole(userId: number) {
-  //   const roleIds = await this.userRoleRepo.find({
-  //     where: { userId },
-  //     select: {
-  //       id: true,
-  //     },
-  //   });
-  // }
 }

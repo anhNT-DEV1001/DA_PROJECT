@@ -1,0 +1,5 @@
+$kind: http-request
+name: refresh
+url: http://127.0.0.1:9000/api/v1/auth/refresh
+method: POST
+order: 4480211814973439
