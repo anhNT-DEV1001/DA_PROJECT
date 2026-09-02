@@ -8,6 +8,7 @@ import { AuthUser, JwtPayload } from '../dtos';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/modules/admin/entites';
 import { In, Repository } from 'typeorm';
+import { UserSession } from '../entities';
 
 @Injectable()
 export class JwtAccessStrategy extends PassportStrategy(
@@ -19,6 +20,8 @@ export class JwtAccessStrategy extends PassportStrategy(
     private readonly userService: UsersService,
     @InjectRepository(Role)
     private readonly roleRepo: Repository<Role>,
+    @InjectRepository(UserSession)
+    private readonly userSessionRepo: Repository<UserSession>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -31,9 +34,40 @@ export class JwtAccessStrategy extends PassportStrategy(
   }
 
   async validate(req: Request, payload: JwtPayload): Promise<AuthUser> {
-    const accessToken = req.cookies?.accessToken ?? '';
+    const accessToken = req.cookies?.accessToken;
+    if (
+      typeof accessToken !== 'string' ||
+      !payload.sub ||
+      !payload.sid
+    ) {
+      throw new UnauthorizedException(
+        'Thông tin xác thực không hợp lệ. Vui lòng đăng nhập lại.',
+      );
+    }
 
-    const user = await this.userService.getByIdWithRoles(payload.sub);
+    const [user, session] = await Promise.all([
+      this.userService.getByIdWithRoles(payload.sub),
+      this.userSessionRepo.findOne({
+        where: {
+          userId: payload.sub,
+          sid: payload.sid,
+        },
+      }),
+    ]);
+
+    const sessionExpiresAt = session
+      ? new Date(session.expiresAt).getTime()
+      : Number.NaN;
+    if (
+      !session ||
+      !Number.isFinite(sessionExpiresAt) ||
+      sessionExpiresAt <= Date.now()
+    ) {
+      throw new UnauthorizedException(
+        'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+      );
+    }
+
     if (!user) {
       throw new UnauthorizedException(
         'Người dùng không tồn tại hoặc đã bị khóa !',
