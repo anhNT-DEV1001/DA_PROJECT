@@ -1,11 +1,13 @@
 import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ApiCookieAuth, ApiOperation } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos';
 import type { AuthUser, RefreshAuthUser } from './dtos';
 import { JwtRefreshGuard } from './guards';
+import { clearAuthCookies, setAuthCookies } from 'src/common/utils';
 
 @Controller('auth')
 export class AuthController {
@@ -15,35 +17,46 @@ export class AuthController {
   ) {}
 
   @Post('login')
+  @ApiOperation({
+    summary: 'Đăng nhập và tạo access/refresh token cookies',
+    security: [],
+  })
   @Public()
   async loginController(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ) {
     const result = await this.authService.login(dto);
-    this.setAuthCookies(
+    setAuthCookies(
       response,
       result.token.accessToken,
       result.token.refreshToken,
+      this.config,
     );
     return result;
   }
 
   @Post('logout')
+  @ApiCookieAuth('access-token-cookie')
+  @ApiOperation({ summary: 'Đăng xuất và xoá phiên đăng nhập hiện tại' })
   async logoutController(
     @CurrentUser() auth: AuthUser,
     @Res({ passthrough: true }) response: Response,
   ) {
     const user = await this.authService.logout(auth.user, auth.token.sessionId);
 
-    response.clearCookie('accessToken', this.accessCookieOptions());
-    response.clearCookie('refreshToken', this.refreshCookieOptions());
+    clearAuthCookies(response, this.config);
     return user;
   }
 
   @Post('refresh')
-  @Public()
+  @ApiOperation({
+    summary: 'Luân chuyển refresh token và cấp cặp token mới',
+    security: [{ 'refresh-token-cookie': [] }],
+  })
+  @ApiCookieAuth('refresh-token-cookie')
   @UseGuards(JwtRefreshGuard)
+  @Public()
   async refreshController(
     @CurrentUser() auth: RefreshAuthUser,
     @Res({ passthrough: true }) response: Response,
@@ -54,43 +67,12 @@ export class AuthController {
       auth.token.refreshToken,
     );
 
-    this.setAuthCookies(response, tokens.accessToken, tokens.refreshToken);
+    setAuthCookies(
+      response,
+      tokens.accessToken,
+      tokens.refreshToken,
+      this.config,
+    );
     return tokens;
-  }
-
-  private setAuthCookies(
-    response: Response,
-    accessToken: string,
-    refreshToken: string,
-  ) {
-    response.cookie('accessToken', accessToken, this.accessCookieOptions());
-    response.cookie('refreshToken', refreshToken, this.refreshCookieOptions());
-  }
-
-  private accessCookieOptions() {
-    return {
-      ...this.baseCookieOptions(),
-      path: this.apiPath(),
-    };
-  }
-
-  private refreshCookieOptions() {
-    return {
-      ...this.baseCookieOptions(),
-      path: `${this.apiPath()}/auth/refresh`,
-    };
-  }
-
-  private baseCookieOptions() {
-    return {
-      httpOnly: true,
-      secure: this.config.get<string>('NODE_ENV') === 'production',
-      sameSite: 'lax' as const,
-    };
-  }
-
-  private apiPath(): string {
-    const prefix = this.config.get<string>('GLOBAL_PREFIX', 'api/v1');
-    return `/${prefix.replace(/^\/+|\/+$/g, '')}`;
   }
 }

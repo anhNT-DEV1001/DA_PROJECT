@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { CustomValidationPipe } from './common/pipes';
 import { HttpExceptionFilter } from './common/filters';
 import { TransformInterceptor } from './common/interceptors';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -24,6 +25,42 @@ async function bootstrap() {
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('DA API')
+    .setDescription(
+      'Tài liệu API sử dụng AccessToken & RefreshToken qua Cookies',
+    )
+    .setVersion('1.0')
+    .addCookieAuth(
+      'accessToken',
+      {
+        type: 'apiKey',
+        in: 'cookie',
+        description: 'JWT Access Token được lưu trong HttpOnly Cookie',
+      },
+      'access-token-cookie',
+    )
+    .addCookieAuth(
+      'refreshToken',
+      {
+        type: 'apiKey',
+        in: 'cookie',
+        description: 'JWT Refresh Token dùng để cấp lại Access Token',
+      },
+      'refresh-token-cookie',
+    )
+    .addSecurityRequirements('access-token-cookie')
+    .build();
+
+  // 2. Tạo tài liệu OpenAPI Document
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('/', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      withCredentials: true,
+    },
+  });
 
   app.enableCors({ origin: allowedOrigins, credentials: true });
   app.useGlobalPipes(new CustomValidationPipe());
