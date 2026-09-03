@@ -19,7 +19,10 @@ export class User extends SoftDeleteEntity {
   gender: string | null;
   @Column({ type: 'varchar', nullable: true, length: 255 })
   avatar: string | null;
-
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  address: string | null;
+  @Column({ type: 'date', nullable: true })
+  dob: Date | null;
   @OneToMany(() => UserRole, (userRole) => userRole.user)
   userRoles: UserRole[];
 

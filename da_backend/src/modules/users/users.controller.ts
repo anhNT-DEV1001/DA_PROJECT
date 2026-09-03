@@ -6,19 +6,33 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dtos';
 import { Public } from 'src/common/decorators';
+import { createMulterOptions } from 'src/common/utils/multer.util';
 import {
+  ApiBody,
+  ApiConsumes,
   ApiCookieAuth,
+  ApiExtraModels,
+  getSchemaPath,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 
+const avatarUploadOptions = createMulterOptions({
+  folder: 'avatars',
+  allowedTypes: ['image'],
+});
+
 @ApiTags('Users')
 @ApiCookieAuth('access-token-cookie')
+@ApiExtraModels(CreateUserDto, UpdateUserDto)
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
@@ -34,20 +48,60 @@ export class UsersController {
   @ApiOperation({ summary: 'Đăng ký người dùng', security: [] })
   @Public()
   @Post()
-  async createUserController(@Body() dto: CreateUserDto) {
-    const response = await this.userService.createUser(dto);
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(CreateUserDto) },
+        {
+          type: 'object',
+          properties: {
+            avatar: { type: 'string', format: 'binary' },
+          },
+        },
+      ],
+    },
+  })
+  @UseInterceptors(FileInterceptor('avatar', avatarUploadOptions))
+  async createUserController(
+    @Body() dto: CreateUserDto,
+    @UploadedFile() avatar?: Express.Multer.File,
+  ) {
+    const userData = avatar
+      ? { ...dto, avatar: `/uploads/avatars/${avatar.filename}` }
+      : dto;
+    const response = await this.userService.createUser(userData);
     return response;
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Cập nhật người dùng' })
   @ApiParam({ name: 'id', example: 1, type: Number })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(UpdateUserDto) },
+        {
+          type: 'object',
+          properties: {
+            avatar: { type: 'string', format: 'binary' },
+          },
+        },
+      ],
+    },
+  })
+  @UseInterceptors(FileInterceptor('avatar', avatarUploadOptions))
   async updateUserController(
     @Param('id') id: number,
     @Body() dto: UpdateUserDto,
+    @UploadedFile() avatar?: Express.Multer.File,
   ) {
-    const resposne = await this.userService.updateUser(id, dto);
-    return resposne;
+    const userData = avatar
+      ? { ...dto, avatar: `/uploads/avatars/${avatar.filename}` }
+      : dto;
+    const response = await this.userService.updateUser(id, userData);
+    return response;
   }
 
   @Delete(':id')

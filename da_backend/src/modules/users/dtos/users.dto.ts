@@ -2,9 +2,11 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import {
   ArrayUnique,
   IsArray,
+  IsDateString,
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MaxLength,
   Min,
@@ -66,6 +68,15 @@ export class CreateUserDto {
   @IsInt({ each: true, message: 'Mỗi mã vai trò phải là số nguyên.' })
   @Min(1, { each: true, message: 'Mỗi mã vai trò phải lớn hơn 0.' })
   roleIds: number[];
+
+  @IsOptional()
+  @IsString({ message: 'Địa chỉ phải là chuỗi ký tự.' })
+  @MaxLength(255, { message: 'Địa chỉ không được vượt quá 255 ký tự.' })
+  address?: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Ngày sinh phải là chuỗi ngày hợp lệ.' })
+  dob?: Date;
 }
 
 export class UpdateUserDto extends PartialType(
