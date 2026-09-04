@@ -1,4 +1,4 @@
-import { GalleryVerticalEnd, ShieldCheck } from "lucide-react"
+import { ShieldCheck } from "lucide-react"
 
 import { LoginForm } from "./components/LoginForm"
 

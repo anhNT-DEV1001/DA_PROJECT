@@ -15,7 +15,8 @@ import {
 } from 'class-validator';
 import { User } from '../entities';
 
-const transformRoleIds = ({ value }: TransformFnParams): unknown => {
+export const transformRoleIds = ({ value }: TransformFnParams): unknown => {
+  if (value === undefined || value === null) return value;
   if (Array.isArray(value) || typeof value !== 'string') return value;
 
   const normalizedValue = value.trim();
@@ -99,6 +100,11 @@ export class CreateUserDto {
   @IsOptional()
   @IsDateString({}, { message: 'Ngày sinh phải là chuỗi ngày hợp lệ.' })
   dob?: Date;
+
+  @ApiProperty({ example: '/uploads/avatars/sample.png', required: false })
+  @IsOptional()
+  @IsString({ message: 'Đường dẫn ảnh đại diện phải là chuỗi ký tự.' })
+  avatar?: string;
 }
 
 export class UpdateUserDto extends PartialType(

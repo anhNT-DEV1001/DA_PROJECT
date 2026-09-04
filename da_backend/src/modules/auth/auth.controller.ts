@@ -1,14 +1,40 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiCookieAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiCookieAuth,
+  ApiExtraModels,
+  ApiOperation,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
-import { CurrentUser, Public } from 'src/common/decorators';
+import { CurrentUser, Public, ResponseMessage } from 'src/common/decorators';
+import { createMulterOptions } from 'src/common/utils/multer.util';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dtos';
+import { LoginDto, RegisterDto } from './dtos';
 import type { AuthUser, RefreshAuthUser } from './dtos';
 import { JwtRefreshGuard } from './guards';
 import { clearAuthCookies, setAuthCookies } from 'src/common/utils';
 
+const avatarUploadOptions = createMulterOptions({
+  folder: 'avatars',
+  allowedTypes: ['image'],
+});
+
+@ApiTags('Auth')
+@ApiExtraModels(RegisterDto)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -16,12 +42,43 @@ export class AuthController {
     private readonly config: ConfigService,
   ) {}
 
+  @Post('register')
+  @ApiOperation({
+    summary: 'Đăng ký tài khoản người dùng',
+    security: [],
+  })
+  @Public()
+  @ResponseMessage('Đăng ký tài khoản thành công')
+  @ApiConsumes('multipart/form-data', 'application/json')
+  @ApiBody({
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(RegisterDto) },
+        {
+          type: 'object',
+          properties: {
+            avatar: { type: 'string', format: 'binary' },
+          },
+        },
+      ],
+    },
+  })
+  @UseInterceptors(FileInterceptor('avatar', avatarUploadOptions))
+  async registerController(
+    @Body() dto: RegisterDto,
+    @UploadedFile() avatar?: Express.Multer.File,
+  ) {
+    const response = await this.authService.register(dto, avatar);
+    return response;
+  }
+
   @Post('login')
   @ApiOperation({
     summary: 'Đăng nhập và tạo access/refresh token cookies',
     security: [],
   })
   @Public()
+  @ResponseMessage('Đăng nhập thành công')
   async loginController(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) response: Response,

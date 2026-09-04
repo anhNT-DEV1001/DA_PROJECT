@@ -31,6 +31,7 @@ import {
 } from "lucide-react"
 import { useThemeStore, type AuthUser } from "@/common/stores"
 import { useNavigate } from "react-router-dom"
+import { getAvatarUrl, getInitials } from "@/common/lib"
 
 export function NavUser({
   user,
@@ -48,8 +49,8 @@ export function NavUser({
   const displayName = user.fullName ?? user.username ?? "Người dùng"
   const displayRole = user.userRoles?.[0]?.role?.description ?? ""
   const email = user.email ?? ""
-  const uploadUrl = import.meta.env.VITE_API_UPLOAD
-  const avatar = `${uploadUrl}${user.avatar}`
+  const avatar = getAvatarUrl(user.avatar)
+  const initials = getInitials(displayName)
 
   const handleThemeChange = (value: unknown) => {
     if (value === "light" || value === "dark" || value === "system") {
@@ -67,7 +68,7 @@ export function NavUser({
           >
             <Avatar>
               <AvatarImage src={avatar} alt={displayName} />
-              <AvatarFallback>{avatar}</AvatarFallback>
+              <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{displayName}</span>
@@ -86,7 +87,7 @@ export function NavUser({
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar>
                     <AvatarImage src={avatar} alt={displayName} />
-                    <AvatarFallback>CN</AvatarFallback>
+                    <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">{displayName}</span>

@@ -11,6 +11,7 @@ import { useAuthStore } from "@/common/stores"
 import MainLayout from "@/components/layouts/MainLayout"
 import { useAuth } from "@/features/auth/hooks"
 import LoginPage from "@/pages/auth/LoginPage"
+import RegisterPage from "@/pages/auth/RegisterPage"
 import HomePage from "@/pages/home/HomePage"
 import PersonalPage from "@/pages/home/PersonalPage"
 import { Loader2 } from "lucide-react"
@@ -47,9 +48,9 @@ function ProtectedRoute({
   return <MainLayout title={title}>{children}</MainLayout>
 }
 
-function PublicOnlyRoute() {
+function PublicOnlyRoute({ children }: { children: ReactNode }) {
   const user = useAuthStore((state) => state.user)
-  return user ? <Navigate to="/home" replace /> : <LoginPage />
+  return user ? <Navigate to="/home" replace /> : children
 }
 
 export function RouteProvider() {
@@ -60,7 +61,22 @@ export function RouteProvider() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to={authPath} replace />} />
-        <Route path="/login" element={<PublicOnlyRoute />} />
+        <Route
+          path="/login"
+          element={
+            <PublicOnlyRoute>
+              <LoginPage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicOnlyRoute>
+              <RegisterPage />
+            </PublicOnlyRoute>
+          }
+        />
         <Route
           path="/home"
           element={

@@ -23,10 +23,18 @@ function Avatar({
   )
 }
 
-function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
+function AvatarImage({
+  className,
+  src,
+  ...props
+}: AvatarPrimitive.Image.Props) {
+  const resolvedSrc =
+    !src || src === "null" || src === "undefined" ? "/default-avatar.svg" : src
+
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
+      src={resolvedSrc}
       className={cn(
         "aspect-square size-full rounded-full object-cover",
         className

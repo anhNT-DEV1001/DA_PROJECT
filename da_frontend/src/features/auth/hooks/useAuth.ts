@@ -76,16 +76,38 @@ export const useAuth = () => {
     },
   })
 
+  const registerMutation = useMutation({
+    mutationFn: authService.register,
+    onSuccess: () => {
+      toast.add({
+        id: "auth-register",
+        type: "success",
+        title: "Đăng ký thành công",
+        description: "Tài khoản đã được tạo thành công! Vui lòng đăng nhập.",
+      })
+    },
+    onError: (error) =>
+      toast.add({
+        id: "auth-register",
+        type: "error",
+        title: "Đăng ký thất bại",
+        description: getApiErrorMessage(error),
+        priority: "high",
+      }),
+  })
+
   const isLoading =
     loginMutation.isPending ||
     logoutMutation.isPending ||
-    refreshMutation.isPending
+    refreshMutation.isPending ||
+    registerMutation.isPending
 
   return {
     user,
     isAuthenticated: user !== null,
     isLoading,
     loginMutation,
+    registerMutation,
     logoutMutation,
     refreshMutation,
   }

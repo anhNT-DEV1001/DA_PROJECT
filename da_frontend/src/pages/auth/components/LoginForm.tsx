@@ -2,7 +2,7 @@ import { cn } from "@/common/lib"
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "@/features/auth/hooks"
 import { Eye, EyeOff, LoaderCircle } from "lucide-react"
 import { useState, type FormEvent } from "react"
@@ -100,12 +100,12 @@ export function LoginForm({
         <Field>
           <FieldDescription className="text-center">
             Chưa có tài khoản?{" "}
-            <a
-              href="#"
+            <Link
+              to="/register"
               className="text-primary no-underline transition-colors hover:underline"
             >
               Đăng ký
-            </a>
+            </Link>
           </FieldDescription>
         </Field>
       </FieldGroup>
