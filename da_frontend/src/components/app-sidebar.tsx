@@ -122,7 +122,7 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
   const user = useAuthStore((state) => state.user)
-  const { navItems, isLoading } = useMenu()
+  const { navItems } = useMenu()
 
   if (!user) return null
 

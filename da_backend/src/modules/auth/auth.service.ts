@@ -6,23 +6,46 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserSession } from './entities';
 import { Repository } from 'typeorm';
-import { JwtPayload, LoginDto, LoginResponse } from './dtos';
+import { JwtPayload, LoginDto, LoginResponse, RegisterDto } from './dtos';
 import { UsersService } from '../users/users.service';
 import bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import { UserResponse } from '../users/dtos';
+import { Role } from '../admin/entites';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(UserSession)
     private readonly userSessionRepo: Repository<UserSession>,
+    @InjectRepository(Role)
+    private readonly roleRepo: Repository<Role>,
     private readonly userService: UsersService,
     private readonly config: ConfigService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async register(
+    dto: RegisterDto,
+    avatar?: Express.Multer.File,
+  ): Promise<UserResponse> {
+    let roleIds = dto.roleIds;
+
+    if (!roleIds || !roleIds.length) {
+      const defaultRole = await this.roleRepo.findOne({
+        where: [{ name: 'USER' }, { name: 'User' }, { name: 'user' }],
+      });
+      roleIds = defaultRole ? [defaultRole.id] : [];
+    }
+
+    const userData = avatar
+      ? { ...dto, avatar: `/uploads/avatars/${avatar.filename}`, roleIds }
+      : { ...dto, roleIds };
+
+    return this.userService.createUser(userData);
+  }
 
   async login(dto: LoginDto): Promise<LoginResponse> {
     const user = await this.userService.getByUsername(dto.username);

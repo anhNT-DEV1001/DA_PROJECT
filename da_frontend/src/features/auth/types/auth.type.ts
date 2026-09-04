@@ -3,6 +3,21 @@ export interface LoginRequest {
   password: string
 }
 
+export interface RegisterRequest {
+  username: string
+  password: string
+  passwordConfirm: string
+  fullName: string
+  email: string
+  phone: string
+  gender: string
+  address?: string
+  dob?: string
+  roleIds?: number[]
+}
+
+export type RegisterResponse = AuthUser
+
 export interface AuthTokens {
   accessToken: string
   refreshToken: string
@@ -42,6 +57,8 @@ export interface AuthUser {
   phone?: string | null
   gender?: string | null
   avatar?: string | null
+  address?: string | null
+  dob?: string | Date | null
   userRoles?: AuthUserRole[]
   createdAt?: string | null
   updatedAt?: string | null
