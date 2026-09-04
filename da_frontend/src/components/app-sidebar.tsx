@@ -3,6 +3,7 @@
 import * as React from "react"
 
 import { useAuthStore } from "@/common/stores"
+import { useMenu } from "@/features/menus/hooks"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import {
@@ -19,7 +20,7 @@ import {
   Settings2Icon,
 } from "lucide-react"
 
-// This is sample data.
+// This is sample data fallback when no menu is returned yet.
 const data = {
   navMain: [
     {
@@ -121,8 +122,11 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
   const user = useAuthStore((state) => state.user)
+  const { navItems, isLoading } = useMenu()
 
   if (!user) return null
+
+  const items = navItems.length > 0 ? navItems : data.navMain
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -130,7 +134,7 @@ export function AppSidebar({
         <NavUser user={user} onLogout={onLogout} isLoggingOut={isLoggingOut} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={items} />
       </SidebarContent>
       <SidebarFooter />
       <SidebarRail />

@@ -18,6 +18,7 @@ export class MenuService {
       relations: {
         children: true,
       },
+      order: { displayOrder: 'ASC' },
     });
     return menus;
   }

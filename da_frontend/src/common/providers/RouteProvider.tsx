@@ -72,7 +72,7 @@ export function RouteProvider() {
         <Route
           path="/personal"
           element={
-            <ProtectedRoute title="Trang cá nhân">
+            <ProtectedRoute title="Thông tin cá nhân">
               <PersonalPage />
             </ProtectedRoute>
           }

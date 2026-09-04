@@ -125,7 +125,7 @@ export function NavUser({
               </DropdownMenuSub>
               <DropdownMenuItem onClick={() => navigate("/personal")}>
                 <UserIcon />
-                Trang cá nhân
+                Thông tin cá nhân
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <BellIcon />
