@@ -140,7 +140,6 @@ export class UsersService {
     });
     return user;
   }
-
   private async validateRoleIds(
     roleRepo: Repository<Role>,
     roleIds: number[],

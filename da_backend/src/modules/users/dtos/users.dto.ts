@@ -106,11 +106,15 @@ export class UpdateUserDto extends PartialType(
 ) {}
 
 export class UserResponse extends PartialType(
-  OmitType(User, ['password', 'sessions'] as const),
+  OmitType(User, ['password', 'sessions', 'hasPermission'] as const),
 ) {
   mapToResponse(user: User): UserResponse {
     const { password, ...userResponse } = user;
     // const roleIds = user.userRoles?.map((ur) => ur.roleId) || [];
     return Object.assign(new UserResponse(), userResponse);
+  }
+
+  hasPermission(code: string): boolean {
+    return User.prototype.hasPermission.call(this, code);
   }
 }

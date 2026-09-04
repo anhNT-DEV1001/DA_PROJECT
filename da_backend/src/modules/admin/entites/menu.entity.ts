@@ -1,5 +1,6 @@
 import { BaseEntity } from 'src/database/entites';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Permission } from './permission.entity';
 
 @Entity('menus')
 export class Menu extends BaseEntity {
@@ -35,4 +36,7 @@ export class Menu extends BaseEntity {
   @ManyToOne(() => Menu, (menu) => menu.children, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'parent_id' })
   parent: Menu | null;
+
+  @OneToMany(() => Permission, (permission) => permission.menu)
+  permissions: Permission[];
 }

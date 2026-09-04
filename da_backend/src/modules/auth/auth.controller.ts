@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiCookieAuth, ApiOperation } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -34,6 +34,15 @@ export class AuthController {
       this.config,
     );
     return result;
+  }
+
+  @Get('me')
+  @ApiCookieAuth('access-token-cookie')
+  @ApiOperation({
+    summary: 'Lấy thông tin người dùng đang đăng nhập kèm roles và permissions',
+  })
+  getMeController(@CurrentUser() auth: AuthUser) {
+    return auth;
   }
 
   @Post('logout')

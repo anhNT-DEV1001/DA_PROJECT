@@ -8,10 +8,12 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtAccessStrategy, JwtRefreshStrategy } from './strategies';
 import { Role } from '../admin/entites';
+import { AdminModule } from '../admin/admin.module';
 
 @Module({
   imports: [
     UsersModule,
+    AdminModule,
     PassportModule.register({ defaultStrategy: 'jwt-access' }),
     TypeOrmModule.forFeature([UserSession, Role]),
     JwtModule.register({}),

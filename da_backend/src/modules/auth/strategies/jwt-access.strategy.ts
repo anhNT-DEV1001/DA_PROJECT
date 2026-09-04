@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -9,6 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/modules/admin/entites';
 import { In, Repository } from 'typeorm';
 import { UserSession } from '../entities';
+import { AuthorizeService } from 'src/modules/admin/services';
 
 @Injectable()
 export class JwtAccessStrategy extends PassportStrategy(
@@ -22,6 +27,7 @@ export class JwtAccessStrategy extends PassportStrategy(
     private readonly roleRepo: Repository<Role>,
     @InjectRepository(UserSession)
     private readonly userSessionRepo: Repository<UserSession>,
+    private readonly authorizeService: AuthorizeService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -35,11 +41,7 @@ export class JwtAccessStrategy extends PassportStrategy(
 
   async validate(req: Request, payload: JwtPayload): Promise<AuthUser> {
     const accessToken = req.cookies?.accessToken;
-    if (
-      typeof accessToken !== 'string' ||
-      !payload.sub ||
-      !payload.sid
-    ) {
+    if (typeof accessToken !== 'string' || !payload.sub || !payload.sid) {
       throw new UnauthorizedException(
         'Thông tin xác thực không hợp lệ. Vui lòng đăng nhập lại.',
       );
@@ -76,10 +78,13 @@ export class JwtAccessStrategy extends PassportStrategy(
 
     if (!user.userRoles) user.userRoles = [];
     const roleIds = user.userRoles.map((ur) => ur.roleId);
-
-    const roles = await this.roleRepo.find({
-      where: { id: In(roleIds) },
-    });
+    if (!user.id) throw new BadRequestException('Lỗi dữ liệu');
+    const [roles, permissions] = await Promise.all([
+      this.roleRepo.find({
+        where: { id: In(roleIds) },
+      }),
+      this.authorizeService.getUserPermission(user.id),
+    ]);
 
     return {
       user,
@@ -88,6 +93,7 @@ export class JwtAccessStrategy extends PassportStrategy(
         sessionId: payload.sid,
       },
       roles,
+      permissions,
     };
   }
 }
