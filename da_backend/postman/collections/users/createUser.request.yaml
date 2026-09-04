@@ -20,7 +20,7 @@ body:
 
     \  \"gender\": \"male\",\r
 
-    \  \"roleIds\": [1, 2, 3]\r
+    \  \"roleIds\": \"[1,2,3]\"\r
 
     }"
 order: 1628653195624447

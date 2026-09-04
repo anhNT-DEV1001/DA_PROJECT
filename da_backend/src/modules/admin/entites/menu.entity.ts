@@ -1,11 +1,38 @@
 import { BaseEntity } from 'src/database/entites';
-import { Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
 @Entity('menus')
 export class Menu extends BaseEntity {
+  @Column({ type: 'varchar', length: 255, nullable: false })
   name: string;
-  route: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  route: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  icon: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: false, unique: true })
   alias: string;
+
+  @Column({ name: 'parent_id', type: 'integer', nullable: true })
   parentId: number | null;
+
+  @Column({ type: 'integer', default: 0 })
   displayOrder: number;
+
+  @Column({ type: 'boolean', default: true })
+  isSideBarDisplay: boolean;
+
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive: boolean;
+
+  // 1. Phía Many trỏ về inverse side là 'parent'
+  @OneToMany(() => Menu, (menu) => menu.parent)
+  children: Menu[];
+
+  // 2. Phía One trỏ về 'children' và cấu hình JoinColumn map vào 'parentId'
+  @ManyToOne(() => Menu, (menu) => menu.children, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'parent_id' })
+  parent: Menu | null;
 }

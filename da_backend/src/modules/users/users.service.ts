@@ -80,7 +80,6 @@ export class UsersService {
         throw new BadRequestException(
           'Thông tin người dùng đã tồn tại trên hệ thống, vui lòng thử lại',
         );
-
       const validRoleIds =
         roleIds === undefined
           ? undefined

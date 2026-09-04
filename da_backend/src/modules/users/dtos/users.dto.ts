@@ -1,4 +1,5 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { Transform, TransformFnParams } from 'class-transformer';
 import {
   ArrayUnique,
   IsArray,
@@ -13,6 +14,22 @@ import {
   MinLength,
 } from 'class-validator';
 import { User } from '../entities';
+
+const transformRoleIds = ({ value }: TransformFnParams): unknown => {
+  if (Array.isArray(value) || typeof value !== 'string') return value;
+
+  const normalizedValue = value.trim();
+  if (!normalizedValue) return [];
+
+  try {
+    const parsedValue: unknown = JSON.parse(normalizedValue);
+    if (Array.isArray(parsedValue)) return parsedValue;
+  } catch {
+    // Hỗ trợ thêm định dạng form-data: "1,2,3".
+  }
+
+  return normalizedValue.split(',').map((roleId) => Number(roleId.trim()));
+};
 
 export class CreateUserDto {
   @ApiProperty({ example: 'nguyenvana' })
@@ -62,7 +79,12 @@ export class CreateUserDto {
   @MaxLength(20, { message: 'Giới tính không được vượt quá 20 ký tự.' })
   gender: string;
 
-  @ApiProperty({ example: [1, 2], type: [Number] })
+  @ApiProperty({
+    example: '[1,2]',
+    type: String,
+    description: 'Danh sách ID vai trò dưới dạng chuỗi JSON hoặc CSV',
+  })
+  @Transform(transformRoleIds)
   @IsArray({ message: 'Danh sách vai trò phải là một mảng.' })
   @ArrayUnique({ message: 'Danh sách vai trò không được trùng lặp.' })
   @IsInt({ each: true, message: 'Mỗi mã vai trò phải là số nguyên.' })
