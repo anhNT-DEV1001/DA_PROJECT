@@ -135,14 +135,13 @@ export class AuthService {
     });
     const hashedToken = await bcrypt.hash(tokens.refreshToken, 10);
 
-    const session = this.userSessionRepo.create({
-      userId: user.id,
-      hashedToken,
-      sid: currentSessionId,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
-    await this.userSessionRepo.remove(currentUserSession);
-    await this.userSessionRepo.save(session);
+    // Cập nhật trực tiếp để session không có khoảng thời gian bị xóa khỏi DB.
+    // Khoảng trống remove/save trước đây có thể khiến request đồng thời nhận 401.
+    currentUserSession.hashedToken = hashedToken;
+    currentUserSession.expiresAt = new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000,
+    );
+    await this.userSessionRepo.save(currentUserSession);
 
     return tokens;
   }

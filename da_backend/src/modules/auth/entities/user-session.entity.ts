@@ -13,6 +13,9 @@ export class UserSession extends BaseEntity {
 
   @Column({ type: 'varchar', length: 255, name: 'hashed_token' })
   hashedToken: string;
+  // Giữ kiểu `date` khi TypeORM synchronize đang bật. Việc đổi trực tiếp sang
+  // timestamp khiến TypeORM tạo lại cột NOT NULL và làm mất dữ liệu hiện có.
+  // Chỉ đổi kiểu này bằng migration có câu lệnh ALTER COLUMN ... USING.
   @Column({ type: 'date', name: 'expires_at' })
   expiresAt: Date;
   @Column({ type: 'uuid' })

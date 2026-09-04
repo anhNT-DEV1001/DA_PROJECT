@@ -1,6 +1,7 @@
 import { api, refreshSession, type ApiSuccessResponse } from "@/common/apis"
 
 import type {
+  AuthUser,
   LoginRequest,
   LoginResponse,
   LogoutResponse,
@@ -8,6 +9,10 @@ import type {
   RegisterRequest,
   RegisterResponse,
 } from "../types"
+
+interface CurrentAuthResponse {
+  user: AuthUser
+}
 
 const register = async (
   payload: RegisterRequest
@@ -36,11 +41,19 @@ const logout = async (): Promise<LogoutResponse> => {
   return response.data.data
 }
 
+const getCurrentUser = async (): Promise<AuthUser> => {
+  const response =
+    await api.get<ApiSuccessResponse<CurrentAuthResponse>>("/auth/me")
+
+  return response.data.data.user
+}
+
 const refresh = (): Promise<RefreshResponse> => refreshSession()
 
 export const authService = {
   register,
   login,
+  getCurrentUser,
   logout,
   refresh,
 }

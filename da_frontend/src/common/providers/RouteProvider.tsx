@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react"
+import type { ReactNode } from "react"
 import {
   BrowserRouter,
   Navigate,
@@ -14,7 +14,6 @@ import LoginPage from "@/pages/auth/LoginPage"
 import RegisterPage from "@/pages/auth/RegisterPage"
 import HomePage from "@/pages/home/HomePage"
 import PersonalPage from "@/pages/home/PersonalPage"
-import { Loader2 } from "lucide-react"
 
 function ProtectedRoute({
   children,
@@ -24,26 +23,13 @@ function ProtectedRoute({
   title: string
 }) {
   const location = useLocation()
-  const { user, refreshMutation } = useAuth()
-  const { isError, isIdle, isPending, mutate: refresh } = refreshMutation
-
-  useEffect(() => {
-    if (user && isIdle) refresh()
-  }, [isIdle, refresh, user])
+  const { user, sessionQuery } = useAuth()
 
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />
 
-  if (isIdle || isPending) {
-    return (
-      <main className="grid min-h-svh place-items-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </main>
-    )
-  }
-
-  if (isError) return <Navigate to="/login" replace />
+  // useAuth sẽ xóa user khi query lỗi; giữ màn hình ổn định trong một render
+  // thay vì điều hướng khi auth store vẫn còn user và tạo vòng lặp route.
+  if (sessionQuery.isError) return null
 
   return <MainLayout title={title}>{children}</MainLayout>
 }

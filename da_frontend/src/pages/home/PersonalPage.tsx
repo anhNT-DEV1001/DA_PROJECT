@@ -216,8 +216,7 @@ export function PersonalPage() {
             </div>
 
             <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-              Các vai trò được cấp bởi quản trị viên hệ thống. Người dùng không
-              có quyền tự thay đổi vai trò cá nhân.
+              Các vai trò được cấp bởi quản trị viên hệ thống.
             </p>
 
             <div className="flex flex-wrap gap-2">

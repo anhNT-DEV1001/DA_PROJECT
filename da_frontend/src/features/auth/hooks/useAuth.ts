@@ -1,4 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useEffect } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { getApiErrorMessage } from "@/common/apis"
 import { useAuthStore } from "@/common/stores"
@@ -17,6 +18,14 @@ export const useAuth = () => {
   const user = useAuthStore((state) => state.user)
   const setUser = useAuthStore((state) => state.setUser)
   const clearUser = useAuthStore((state) => state.clearUser)
+
+  const sessionQuery = useQuery({
+    queryKey: authQueryKeys.currentUser,
+    queryFn: authService.getCurrentUser,
+    enabled: user !== null,
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  })
 
   const loginMutation = useMutation({
     mutationFn: authService.login,
@@ -39,6 +48,18 @@ export const useAuth = () => {
         priority: "high",
       }),
   })
+
+  // Đồng bộ user đã persist với session thật trên server. Nếu access token hết
+  // hạn, interceptor sẽ refresh đúng một lần rồi request lại /auth/me.
+  useEffect(() => {
+    if (sessionQuery.data) setUser(sessionQuery.data)
+  }, [sessionQuery.data, setUser])
+
+  // Mọi lỗi khi kiểm tra session đều phải xóa auth state cục bộ. Nếu giữ user
+  // đã persist, /login sẽ đẩy về /home trong khi /home lại đẩy về /login.
+  useEffect(() => {
+    if (sessionQuery.isError) clearUser()
+  }, [clearUser, sessionQuery.isError])
 
   const logoutMutation = useMutation({
     mutationFn: authService.logout,
@@ -104,6 +125,7 @@ export const useAuth = () => {
 
   return {
     user,
+    sessionQuery,
     isAuthenticated: user !== null,
     isLoading,
     loginMutation,
